@@ -9,7 +9,7 @@ def send_email(to_email, subject, body, from_email, password, smtp_server, smtp_
     try:
         # SMTP 서버 연결
         server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()  # TLS 보안 연결 시작
+        server.starttls()  # TLS 보안 연결
         server.login(from_email, password)
 
         # 이메일 내용 설정
@@ -30,8 +30,8 @@ def send_email(to_email, subject, body, from_email, password, smtp_server, smtp_
 def main():
     st.title("📧 Excel 기반 조건부 이메일 자동 발송")
 
-    # SMTP 설정 입력
-    st.header("🔐 이메일 설정")
+    # 발송자 정보 설정
+    st.header("🔐 발송자 정보 입력")
     from_email = st.text_input("이메일 주소 (발송자)", placeholder="example@naver.com")
     password = st.text_input("비밀번호", type="password")
     smtp_server = st.text_input("SMTP 서버 주소", placeholder="smtp.naver.com")
@@ -48,7 +48,7 @@ def main():
         st.dataframe(df)
 
         # 조건 설정
-        st.header("🔎 필터링 조건")
+        st.header("🔎 필터링 조건 설정")
         filter_column = st.selectbox("조건을 설정할 열을 선택하세요", df.columns)
         filter_value = st.text_input("조건 값 입력", placeholder="예: 완료")
 
@@ -61,23 +61,23 @@ def main():
             # 이메일 발송
             st.header("📨 이메일 발송")
             email_column = st.selectbox("이메일 주소가 포함된 열을 선택하세요", df.columns)
-            subject = st.text_input("이메일 제목", placeholder="이메일 제목 입력")
+            subject = st.text_input("이메일 제목", placeholder="제목을 입력하세요")
             body = st.text_area("이메일 내용", placeholder="이메일 내용을 입력하세요.")
 
             if st.button("이메일 발송 시작"):
                 if from_email and password and smtp_server:
                     results = []
                     for index, row in filtered_df.iterrows():
-                        to_email = row[email_column]
+                        to_email = row[email_column]  # 수신자 이메일 주소 가져오기
                         result = send_email(to_email, subject, body, from_email, password, smtp_server, smtp_port)
                         results.append(result)
 
-                    # 발송 결과 출력
+                    # 결과 출력
                     st.write("📋 발송 결과:")
                     for res in results:
                         st.write(res)
                 else:
-                    st.warning("이메일 주소, 비밀번호, SMTP 서버 정보를 입력해주세요.")
+                    st.warning("발송자 이메일, 비밀번호, SMTP 서버 정보를 모두 입력해주세요.")
 
 if __name__ == "__main__":
     main()
