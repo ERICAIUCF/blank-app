@@ -32,10 +32,13 @@ def main():
 
     # 발송자 정보 설정
     st.header("🔐 발송자 정보 입력")
-    from_email = st.text_input("이메일 주소 (발송자)", placeholder="example@naver.com")
-    password = st.text_input("비밀번호", type="password")
-    smtp_server = st.text_input("SMTP 서버 주소", placeholder="smtp.naver.com")
-    smtp_port = st.number_input("SMTP 포트", min_value=1, value=587)
+    from_email = "sa5353@hanyang.ac.kr"  # 발송자 이메일 고정
+    st.write(f"발송자 이메일: **{from_email}**")
+    password = st.text_input("비밀번호를 입력하세요", type="password")
+
+    # Gmail SMTP 서버 설정 (고정)
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
 
     # 엑셀 파일 업로드
     st.header("📂 엑셀 파일 업로드")
@@ -47,37 +50,46 @@ def main():
         st.write("📊 업로드된 데이터:")
         st.dataframe(df)
 
-        # 조건 설정
-        st.header("🔎 필터링 조건 설정")
-        filter_column = st.selectbox("조건을 설정할 열을 선택하세요", df.columns)
-        filter_value = st.text_input("조건 값 입력", placeholder="예: 완료")
+        # 필터링 조건 적용
+        st.header("🔎 필터링 조건 적용")
+        st.write("다음 조건을 충족하는 데이터를 필터링합니다:")
+        st.write("- `AB열`이 'Y'")  
+        st.write("- `W열`이 '경과'")  
+        st.write("- `M열`이 '미제출'")  
+        st.write("- `N열`이 공란(빈 값)")  
 
-        # 조건 적용
         if st.button("조건 적용"):
-            filtered_df = df[df[filter_column] == filter_value]
+            # 필터링 조건 적용
+            filtered_df = df[
+                (df['AB'] == 'Y') &
+                (df['W'] == '경과') &
+                (df['M'] == '미제출') &
+                (df['N'].isna())  # N열이 공란(빈 값)인 경우
+            ]
+
             st.write("✅ 조건에 맞는 데이터:")
             st.dataframe(filtered_df)
 
             # 이메일 발송
             st.header("📨 이메일 발송")
-            email_column = st.selectbox("이메일 주소가 포함된 열을 선택하세요", df.columns)
             subject = st.text_input("이메일 제목", placeholder="제목을 입력하세요")
             body = st.text_area("이메일 내용", placeholder="이메일 내용을 입력하세요.")
 
             if st.button("이메일 발송 시작"):
-                if from_email and password and smtp_server:
+                if password:
                     results = []
                     for index, row in filtered_df.iterrows():
-                        to_email = row[email_column]  # 수신자 이메일 주소 가져오기
-                        result = send_email(to_email, subject, body, from_email, password, smtp_server, smtp_port)
-                        results.append(result)
+                        to_email = row['Q']  # 이메일 주소가 Q열에 있으므로 가져오기
+                        if pd.notna(to_email):  # 이메일이 비어있지 않은 경우
+                            result = send_email(to_email, subject, body, from_email, password, smtp_server, smtp_port)
+                            results.append(result)
 
                     # 결과 출력
                     st.write("📋 발송 결과:")
                     for res in results:
                         st.write(res)
                 else:
-                    st.warning("발송자 이메일, 비밀번호, SMTP 서버 정보를 모두 입력해주세요.")
+                    st.warning("비밀번호를 입력해주세요.")
 
 if __name__ == "__main__":
     main()
