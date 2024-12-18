@@ -46,4 +46,5 @@ def main():
 
     if uploaded_file is not None:
         # 엑셀 파일 읽기
-        df = pd.
+        df = pd.read_excel(uploaded_file, engine="openpyxl")
+
